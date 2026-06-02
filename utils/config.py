@@ -1,43 +1,55 @@
 import argparse
-import os
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Pytorch implementation of GAN models.")
+    parser = argparse.ArgumentParser(
+        description='AlloyGAN / HCVAE unified training entry.'
+    )
 
-    parser.add_argument('--model', type=str, default='DCGAN', choices=['GAN', 'CGAN','DCGAN'])
-    parser.add_argument('--is_train', type=str, default='True')
-    parser.add_argument('--dataroot', required=True, help='path to dataset')
-    parser.add_argument('--dataset', type=str, default='alloys',
-                            help='The name of dataset')
-    parser.add_argument('--download', type=str, default='False')
-    parser.add_argument('--epochs', type=int, default=50, help='The number of epochs to run')
-    parser.add_argument('--batch_size', type=int, default=64, help='The size of batch')
-    parser.add_argument('--cuda',  type=str, default='False', help='Availability of cuda')
+    # ── Model ────────────────────────────────────────────────────────────────
+    parser.add_argument('--model', type=str, default='HCVAE',
+                        choices=['GAN', 'CGAN', 'HCVAE'],
+                        help='Model to train')
 
-    parser.add_argument('--load_D', type=str, default='/home/haoyun/AISI/dm/alloygan/discriminator.pkl', help='Path for loading Discriminator network')
-    parser.add_argument('--load_G', type=str, default='/home/haoyun/AISI/dm/alloygan/generator.pkl', help='Path for loading Generator network')
-    parser.add_argument('--generator_iters', type=int, default=10000, help='The number of iterations for generator in GAN model.')
-    return check_args(parser.parse_args())
+    # ── Data ─────────────────────────────────────────────────────────────────
+    parser.add_argument('--dataroot', type=str, required=True,
+                        help='Path to Alloy_train.csv')
+    parser.add_argument('--test_size', type=float, default=0.2,
+                        help='Fraction of data used for validation (HCVAE only)')
+    parser.add_argument('--seed', type=int, default=42)
 
+    # ── Training ─────────────────────────────────────────────────────────────
+    parser.add_argument('--epochs', type=int, default=500,
+                        help='Number of training epochs')
+    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--lr', type=float, default=1e-3,
+                        help='Learning rate (HCVAE / GAN-G)')
+    parser.add_argument('--cuda', action='store_true',
+                        help='Use GPU if available')
 
-# Checking arguments
-def check_args(args):
-    # --epoch
-    try:
-        assert args.epochs >= 1
-    except:
-        print('Number of epochs must be larger than or equal to one')
+    # ── HCVAE hyperparameters ─────────────────────────────────────────────────
+    parser.add_argument('--latent_macro', type=int, default=48)
+    parser.add_argument('--latent_micro', type=int, default=24)
+    parser.add_argument('--latent_gfa',   type=int, default=24)
+    parser.add_argument('--hidden_dim',   type=int, default=128)
+    parser.add_argument('--beta',         type=float, default=2.0,
+                        help='KL weight in HCVAE ELBO')
+    parser.add_argument('--dropout',      type=float, default=0.4)
+    parser.add_argument('--patience',     type=int, default=50,
+                        help='Early-stopping patience (HCVAE)')
 
-    # --batch_size
-    try:
-        assert args.batch_size >= 1
-    except:
-        print('Batch size must be larger than or equal to one')
+    # ── GAN / CGAN hyperparameters ────────────────────────────────────────────
+    parser.add_argument('--noise_dim', type=int, default=100,
+                        help='GAN noise dimension (5 for CGAN, 100 for GAN)')
+    parser.add_argument('--lr_d', type=float, default=2e-4,
+                        help='Discriminator learning rate')
+    parser.add_argument('--lr_g', type=float, default=2e-4,
+                        help='Generator learning rate')
 
-    if args.dataset == 'cifar' or args.dataset == 'stl10':
-        args.channels = 3
-    else:
-        args.channels = 1
-    args.cuda = True if args.cuda == 'True' else False
-    return args
+    # ── Output ───────────────────────────────────────────────────────────────
+    parser.add_argument('--save_path', type=str, default='./checkpoints',
+                        help='Directory to save model checkpoints')
+    parser.add_argument('--log_interval', type=int, default=10,
+                        help='Print loss every N epochs')
+
+    return parser.parse_args()

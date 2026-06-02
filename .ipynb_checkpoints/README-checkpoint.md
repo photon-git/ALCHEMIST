@@ -68,11 +68,12 @@ tensorboard --logdir ./logs/
 
 If you find this code useful in your research, please consider citing:
 ```
-@article{hao2025inverse,
-  title={Inverse Materials Design by Large Language Model-Assisted Generative Framework},
+@article{hao2026alchemist,
+  title={ALCHEMIST: Hierarchical Generative Inverse Design for Exploratory Materials Discovery},
   author={Hao, Yun and Fan, Che and Ye, Beilin and Lu, Wenhao and Lu, Zhen and Zhao, Peilin and Gao, Zhifeng and Wu, Qingyao and Liu, Yanhui and Wen, Tongqi},
-  journal={arXiv preprint arXiv:2502.18127},
-  year={2025}
+  journal={National Science Review},
+  year={2026},
+  doi={10.1093/nsr/XXXX}
 }
 
 ```
